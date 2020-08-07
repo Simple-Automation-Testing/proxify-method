@@ -1,16 +1,16 @@
 {
-  "name": "api-framework",
-  "version": "0.0.1",
+  "name": "proxify-method",
+  "version": "0.0.1-a",
   "description": "",
   "main": "built/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:unit": "find ./specs/ -name '*.spec.ts' | xargs mocha --require ts-node/register --timeout 30000"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Simple-Automation-Testing/api-framework.git"
   },
-  "author": "",
+  "author": "Potapov Dmytro",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Simple-Automation-Testing/api-framework/issues"
@@ -27,5 +27,8 @@
     "mocha": "^8.1.1",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
+  },
+  "engines": {
+    "node": ">=12.18.3"
   }
 }
