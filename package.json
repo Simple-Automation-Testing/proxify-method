@@ -1,12 +1,12 @@
 {
   "name": "proxify-method",
-  "version": "0.0.1-a",
+  "version": "0.0.1",
   "description": "",
   "main": "built/index.js",
   "scripts": {
     "test:unit": "find ./specs/ -name '*.spec.ts' | xargs mocha --require ts-node/register --timeout 30000",
     "lint": "eslint --ext .ts ./",
-    "built": "tsc"
+    "built": "rm -rf ./built && tsc"
   },
   "repository": {
     "type": "git",

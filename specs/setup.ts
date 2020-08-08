@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {setUpChain} from '../lib';
+import {chainProxify} from '../lib';
 
 const noop = {
   // noop http method get
@@ -30,17 +30,13 @@ class MainIterface {
 
   constructor() {
     this.req = noop;
-
-    setUpChain('assertStatus', assertStatus)
-      .setUpChain('assertBody', assertBody)
-      .setUpChain('assertHeader', assertHeaders)
+    chainProxify('assertStatus', assertStatus)
+      .chainProxify('assertBody', assertBody)
+      .chainProxify('assertHeader', assertHeaders)
       .initChainModel(this);
   }
 }
 
-interface GenericIdentityFn<T> {
-  (arg: any): T;
-}
 
 interface IResponseData extends Promise<{status: number; body: any; headers: any;}> {
   assertStatus(status: number): IResponseData;

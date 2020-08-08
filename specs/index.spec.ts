@@ -14,5 +14,17 @@ describe('Unit tests', function() {
   it('positive chain usage', async function() {
     const {status, body} = await someController.getDataMethod1().assertStatus(200).assertBody(1);
     expect(status).to.eql(200);
+    expect(body).to.be.exist;
   });
+
+  it('positive full chain', async function() {
+    const {status, body} = await someController.postDataMethod2()
+      .assertStatus(200)
+      .assertBody(1)
+      .assertStatus(200)
+      .assertBody(1);
+    expect(status).to.eql(200);
+    expect(body).to.be.exist;
+  });
+
 });
