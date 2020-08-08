@@ -10,6 +10,7 @@ function proxifyResult(resultPromise, assertChain: {[k: string]: (...args: any[]
               assertChain[p as string](expected, resolved);
             }
           );
+          return proxed;
         };
       } else {
         if (!callQueu.length) {

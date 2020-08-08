@@ -14,7 +14,7 @@ const noop = {
 
 
 function assertStatus(expectedStatus, {status}) {
-  expect(status).to.equal(expectedStatus)
+  expect(status).to.equal(expectedStatus);
 }
 
 function assertBody(expectedBodyPart, {body}) {
@@ -22,7 +22,7 @@ function assertBody(expectedBodyPart, {body}) {
 }
 
 function assertHeaders(expectedHeaderKey, {headers}) {
-  expect(headers).to.include(expectedHeaderKey)
+  expect(headers).to.include(expectedHeaderKey);
 }
 
 class MainIterface {
@@ -38,18 +38,28 @@ class MainIterface {
   }
 }
 
+interface GenericIdentityFn<T> {
+  (arg: any): T;
+}
+
+interface IResponseData extends Promise<{status: number; body: any; headers: any;}> {
+  assertStatus(status: number): IResponseData;
+  assertBody(bodyPart: number): IResponseData;
+  assertHeader(headerKey: string): IResponseData;
+}
+
 
 class SomeControllerApi extends MainIterface {
   constructor() {
     super();
   }
 
-  getDataMethod1() {
-    return this.req.get();
+  getDataMethod1(): IResponseData {
+    return this.req.get() as any;
   }
 
-  postDataMethod2() {
-    return this.req.post();
+  postDataMethod2(): IResponseData {
+    return this.req.post() as any;
   }
 }
 
