@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {SomeControllerApi} from './setup';
+import {SomeControllerApi} from '../example/example';
 
 describe('Unit tests async end user interface', function() {
   const someController = new SomeControllerApi();
@@ -51,6 +51,21 @@ describe('Unit tests async end user interface', function() {
       await someController.postDataMethod2()
         .assertBodyInclude(10000)
         .assertStatus(200);
+      // not exists in body
+    } catch (error) {
+      expect(error.toString()).to.include('to include 10000');
+    }
+  });
+
+  it('negative chain last after few calls', async function() {
+    try {
+      await someController.postDataMethod2()
+        .assertStatus(200)
+        .assertStatus(200)
+        .assertBodyInclude(1)
+        .assertBodyInclude(1)
+        .assertStatus(200)
+        .assertBodyInclude(10000);
       // not exists in body
     } catch (error) {
       expect(error.toString()).to.include('to include 10000');

@@ -1,9 +1,16 @@
 
 # proxify-method
 
-## Zero dependencies package. Main purpose of this package is to provide integration of the common assertions into class methods without refactoring and updates of the class methods, this package does not affect constructor, getters/setters and does not affect internal logic of the class methods. Package works with async function/Promises
+## Zero dependencies package. Main purpose of this package is to provide integration of the common assertions into class methods without refactoring and updates of the class methods, this package does not affect constructor, getters/setters and does not affect internal logic of the class methods. Package works with async function/Promises, and also sync common code.
+
+![npm downloads](https://img.shields.io/npm/dm/proxify-method.svg?style=flat-square)
 
 ### Usage
+
+[ts example](/example/example.ts)
+[js example](#js)
+
+#### js
 
 ```js
 // example with node-fetch and chai

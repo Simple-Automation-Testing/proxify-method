@@ -1,4 +1,5 @@
 import {expect} from 'chai';
+// import {chainProxify} from 'proxify-method';
 import {chainProxify} from '../lib';
 
 const noop = {
@@ -12,6 +13,10 @@ const noop = {
   }), 250)),
 };
 
+
+function assertArray(expectedArrayPart, arr) {
+  expect(arr).to.include(expectedArrayPart);
+}
 
 function assertStatus(expectedStatus, {status}) {
   expect(status).to.equal(expectedStatus);
@@ -33,6 +38,7 @@ class MainIterface {
     chainProxify('assertStatus', assertStatus)
       .chainProxify('assertBodyInclude', assertBodyInclude)
       .chainProxify('assertHeader', assertHeaders)
+      .chainProxify('assertArray', assertArray)
       .initChainModel(this);
   }
 }
@@ -53,6 +59,10 @@ interface IDataExtended extends ITypicalData {
   assertStatus(status: number): IDataExtended;
   assertBodyInclude(bodyPart: number): IDataExtended;
   assertHeader(headerKey: string): IDataExtended;
+}
+
+interface IDataExtendedArray extends Array<number> {
+  assertArray(arrPart: number): IDataExtendedArray;
 }
 
 class SomeControllerApi extends MainIterface {
@@ -78,6 +88,10 @@ class SomeControllerApi extends MainIterface {
     return {
       status: 200, body: [1, 23, 4], headers: {'Content-Type': 'application/json'}
     } as any;
+  }
+
+  getArrayData(): IDataExtendedArray {
+    return [1, 2, 3, 4, 5] as IDataExtendedArray;
   }
 }
 

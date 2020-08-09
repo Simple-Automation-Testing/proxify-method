@@ -21,6 +21,9 @@ function proxifyResultSync(result, chainMehod: {[k: string]: (...args: any[]) =>
         return proxifiedResult[p];
       }
     },
+    getPrototypeOf(_t) {
+      return Object.getPrototypeOf(proxifiedResult);
+    },
     ownKeys(_t) {
       return Object.getOwnPropertyNames(proxifiedResult);
     },
