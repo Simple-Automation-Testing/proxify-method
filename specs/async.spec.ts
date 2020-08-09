@@ -35,12 +35,23 @@ describe('Unit tests async end user interface', function() {
     }
   });
 
-  it('negative chain second call faile', async function() {
+  it('negative chain second call failed', async function() {
     try {
       await someController.postDataMethod2()
         .assertStatus(200)
         // not exists in body
         .assertBodyInclude(10000);
+    } catch (error) {
+      expect(error.toString()).to.include('to include 10000');
+    }
+  });
+
+  it('negative chain first call failed', async function() {
+    try {
+      await someController.postDataMethod2()
+        .assertBodyInclude(10000)
+        .assertStatus(200);
+      // not exists in body
     } catch (error) {
       expect(error.toString()).to.include('to include 10000');
     }
