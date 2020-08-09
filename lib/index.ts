@@ -1,45 +1,14 @@
-function proxifyResult(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
-  const callQueu = [];
-  const proxed = new Proxy({}, {
-    get(_t, p) {
-      if (chainMehod[p as string]) {
-        return function(expected) {
-          callQueu.push(
-            async function() {
-              const resolved = await resultPromise;
-              chainMehod[p as string](expected, resolved);
-            }
-          );
-          return proxed;
-        };
-      } else {
-        if (!callQueu.length) {
-          return function(...args) {
-            return resultPromise[p].call(resultPromise, ...args);
-          };
-        } if (callQueu.length === 1) {
-          return async function(onRes, onRej) {
-            const result = await callQueu[0]().catch(onRej);
-            if (fromResult) {
-              return result;
-            }
-            return resultPromise[p].call(resultPromise, onRes, onRej);
-          };
-        }
-        return function(onRes, onRej) {
-          return callQueu.reduce((quedCallResolver, queuedCall) => {
-            return ((typeof quedCallResolver) === 'object' && quedCallResolver.then && quedCallResolver || quedCallResolver()).then((result) => {
-              if (fromResult) {
-                return queuedCall(result);
-              }
-              return queuedCall();
-            }).catch(onRej);
-          }).then(() => resultPromise[p].call(resultPromise, onRes, onRej));
-        };
-      }
-    }
-  });
-  return proxed;
+import {proxifyResultAsync} from './async.proxify';
+import {proxifyResultSync} from './sync.proxify';
+
+function proxifyResult(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+  if ((typeof result).includes('function')) {
+    result = result();
+  }
+  if ((typeof result) === 'object' && result.then) {
+    return proxifyResultAsync(result, chainMehod, fromResult);
+  }
+  return proxifyResultSync(result, chainMehod, fromResult);
 }
 
 function initChainModel(ctx, chainMehod, resultFromChain) {
@@ -67,7 +36,12 @@ function setUpChain<T>(name: string, asserter: (expectedValue: any, resolvedMeth
   _chainMehod[name] = asserter;
   return {
     chainProxify: (name: string, asserter: (...args: any[]) => any) => setUpChain(name, asserter, _chainMehod),
-    initChainModel: (ctx) => initChainModel(ctx, _chainMehod, setUpChain.resultFromChain)
+    initChainModel: (ctx) => {
+      const resultFromChain = setUpChain.resultFromChain;
+      // back to default condition, should be disabled = false
+      setUpChain.resultFromChain = false;
+      initChainModel(ctx, _chainMehod, resultFromChain);
+    }
   };
 }
 setUpChain.resultFromChain = false;

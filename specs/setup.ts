@@ -17,7 +17,7 @@ function assertStatus(expectedStatus, {status}) {
   expect(status).to.equal(expectedStatus);
 }
 
-function assertBody(expectedBodyPart, {body}) {
+function assertBodyInclude(expectedBodyPart, {body}) {
   expect(body).to.include(expectedBodyPart);
 }
 
@@ -31,19 +31,29 @@ class MainIterface {
   constructor() {
     this.req = noop;
     chainProxify('assertStatus', assertStatus)
-      .chainProxify('assertBody', assertBody)
+      .chainProxify('assertBodyInclude', assertBodyInclude)
       .chainProxify('assertHeader', assertHeaders)
       .initChainModel(this);
   }
 }
 
+interface ITypicalData {
+  status: number;
+  body: any;
+  headers: any;
+}
 
-interface IResponseData extends Promise<{status: number; body: any; headers: any;}> {
+interface IResponseData extends Promise<ITypicalData> {
   assertStatus(status: number): IResponseData;
-  assertBody(bodyPart: number): IResponseData;
+  assertBodyInclude(bodyPart: number): IResponseData;
   assertHeader(headerKey: string): IResponseData;
 }
 
+interface IDataExtended extends ITypicalData {
+  assertStatus(status: number): IDataExtended;
+  assertBodyInclude(bodyPart: number): IDataExtended;
+  assertHeader(headerKey: string): IDataExtended;
+}
 
 class SomeControllerApi extends MainIterface {
   constructor() {
@@ -56,6 +66,18 @@ class SomeControllerApi extends MainIterface {
 
   postDataMethod2(): IResponseData {
     return this.req.post() as any;
+  }
+
+  getDataMethod1Sync(): IDataExtended {
+    return {
+      status: 200, body: [1, 23, 4], headers: {'Content-Type': 'application/json'}
+    } as any;
+  }
+
+  postDataMethod2Sync(): IDataExtended {
+    return {
+      status: 200, body: [1, 23, 4], headers: {'Content-Type': 'application/json'}
+    } as any;
   }
 }
 

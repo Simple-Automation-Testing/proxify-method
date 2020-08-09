@@ -1,14 +1,9 @@
 
-# proxify-method (beta)
+# proxify-method
 
-### Zero dependencies package.
-### Main purpose of this package is to provide integration of the common assertions into class methods
-### without refactoring and updates of the class methods, this package does not affect constructor, getters/setters
-### and does not affect internal logic of the class methods. Package works with async function/Promises,
-### for common sync code this package will not provide any useful effect.
+## Zero dependencies package. Main purpose of this package is to provide integration of the common assertions into class methods without refactoring and updates of the class methods, this package does not affect constructor, getters/setters and does not affect internal logic of the class methods. Package works with async function/Promises
 
-
-#### Usage
+### Usage
 
 ```js
 // example with node-fetch and chai
