@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import {expect, AssertionError} from 'chai';
 import {SomeControllerApi} from '../example/example';
 
 describe('Unit tests async end user interface', function() {
@@ -70,5 +70,17 @@ describe('Unit tests async end user interface', function() {
     } catch (error) {
       expect(error.toString()).to.include('to include 10000');
     }
+  });
+
+  it('negative catch usage', async function() {
+    const catched = await someController.postDataMethod2()
+      .assertBodyInclude(10000)
+      .assertStatus(200)
+      .assertStatus(200)
+      .assertBodyInclude(1)
+      .assertBodyInclude(1)
+      .assertStatus(200)
+      .catch((err) => err);
+    expect(catched).to.be.instanceOf(AssertionError);
   });
 });

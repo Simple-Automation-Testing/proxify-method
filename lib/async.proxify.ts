@@ -1,11 +1,11 @@
 
 function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
-  const callQueu = [];
+  const callQueue = [];
   const proxed = new Proxy({}, {
     get(_t, p) {
       if (chainMehod[p as string]) {
         return function(expected) {
-          callQueu.push(
+          callQueue.push(
             async function() {
               const resolved = await resultPromise;
               chainMehod[p as string](expected, resolved);
@@ -13,14 +13,14 @@ function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: a
           );
           return proxed;
         };
-      } else {
-        if (!callQueu.length) {
+      } else if (p === 'then' || p === 'catch') {
+        if (!callQueue.length) {
           return function(...args) {
             return resultPromise[p].call(resultPromise, ...args);
           };
-        } if (callQueu.length === 1) {
+        } if (callQueue.length === 1) {
           return async function(onRes, onRej) {
-            const result = await callQueu[0]().catch(onRej);
+            const result = await callQueue[0]().catch(onRej);
             if (fromResult) {
               return result;
             }
@@ -28,19 +28,22 @@ function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: a
           };
         }
         return async function(onRes, onRej) {
-          const resultQueue = await callQueu.reduce(async function(quedCallResolver, queuedCall) {
-            const result = await ((typeof quedCallResolver) === 'object' && quedCallResolver.then && quedCallResolver || quedCallResolver())
-              .catch(onRej);
 
-            if (fromResult) {
-              return queuedCall(result);
+          const catcher = p === 'catch' ? onRes : onRej;
+
+          let iterationResult;
+          for (const queuedCall of callQueue) {
+
+            iterationResult = await queuedCall(fromResult ? iterationResult : undefined).catch((error) => ({error, ____proxed____: true}));
+            if (iterationResult && iterationResult.____proxed____) {
+              return catcher(iterationResult.error);
             }
-            return queuedCall();
-
-          }).catch(onRej);
-          if (fromResult) {
-            return resultQueue;
           }
+
+          if (fromResult) {
+            return iterationResult;
+          }
+
           return resultPromise[p].call(resultPromise, onRes, onRej);
         };
       }
