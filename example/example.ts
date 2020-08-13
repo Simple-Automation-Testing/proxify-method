@@ -26,6 +26,10 @@ function assertBodyInclude(expectedBodyPart, {body}) {
   expect(body).to.include(expectedBodyPart);
 }
 
+function assertResponsePropEqual(prop: string, expectedValue: any, resolved) {
+  expect(resolved[prop]).to.equal(expectedValue);
+}
+
 function assertHeaders(expectedHeaderKey, {headers}) {
   expect(headers).to.include(expectedHeaderKey);
 }
@@ -39,6 +43,7 @@ class MainIterface {
       .chainProxify('assertBodyInclude', assertBodyInclude)
       .chainProxify('assertHeader', assertHeaders)
       .chainProxify('assertArray', assertArray)
+      .chainProxify('assertResponsePropEqual', assertResponsePropEqual)
       .initChainModel(this);
   }
 }
@@ -53,6 +58,7 @@ interface IResponseData extends Promise<ITypicalData> {
   assertStatus(status: number): IResponseData;
   assertBodyInclude(bodyPart: number): IResponseData;
   assertHeader(headerKey: string): IResponseData;
+  assertResponsePropEqual(prop: string, expectedValue: any): IResponseData;
 }
 
 interface IDataExtended extends ITypicalData {

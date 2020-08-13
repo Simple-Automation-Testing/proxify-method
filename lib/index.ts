@@ -24,12 +24,12 @@ function initChainModel(ctx, chainMehod, resultFromChain) {
 
 interface ISetUpChain {
   resultFromChain: boolean;
-  <T>(name: string, asserter: (expectedValue: any, resolvedMethodData: T) => any): {
+  <T>(name: string, asserter: (...args: any[]) => any): {
     chainProxify: ISetUpChain; initChainModel: (ctx: any) => void
   }
 }
 
-function setUpChain<T>(name: string, asserter: (expectedValue: any, resolvedMethodData: T) => any, _chainMehod = {}) {
+function setUpChain<T>(name: string, asserter: (...args: any[]) => any, _chainMehod = {}) {
   if (!(typeof asserter).includes('function')) {
     throw new Error('asserter should be a function');
   }

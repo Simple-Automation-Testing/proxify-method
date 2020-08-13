@@ -4,11 +4,11 @@ function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: a
   const proxed = new Proxy({}, {
     get(_t, p) {
       if (chainMehod[p as string]) {
-        return function(expected) {
+        return function(...expectation) {
           callQueue.push(
             async function() {
               const resolved = await resultPromise;
-              chainMehod[p as string](expected, resolved);
+              chainMehod[p as string](...expectation, resolved);
             }
           );
           return proxed;
