@@ -22,20 +22,34 @@ function initChainModel(ctx, chainMehod, resultFromChain) {
   });
 }
 
+
+interface INameOrAsserter {
+  name: string;
+  (...args: any[]): any;
+}
+
 interface ISetUpChain {
   resultFromChain: boolean;
-  <T>(name: string, asserter: (...args: any[]) => any): {
+  <T>(name: string | INameOrAsserter, asserter?: (...args: any[]) => any): {
     chainProxify: ISetUpChain; initChainModel: (ctx: any) => void
   }
 }
 
-function setUpChain<T>(name: string, asserter: (...args: any[]) => any, _chainMehod = {}) {
+function setUpChain<T>(name: string | INameOrAsserter, asserter?: INameOrAsserter, _chainMehod = {}) {
+
+  if ((typeof name).includes('function') && (name as INameOrAsserter).name) {
+    asserter = (name as INameOrAsserter);
+    name = (name as INameOrAsserter).name;
+  }
+
   if (!(typeof asserter).includes('function')) {
     throw new Error('asserter should be a function');
   }
-  _chainMehod[name] = asserter;
+
+  _chainMehod[name as string] = asserter;
+
   return {
-    chainProxify: (name: string, asserter: (...args: any[]) => any) => setUpChain(name, asserter, _chainMehod),
+    chainProxify: (name: string | INameOrAsserter, asserter?: INameOrAsserter) => setUpChain(name, asserter, _chainMehod),
     initChainModel: (ctx) => {
       const resultFromChain = setUpChain.resultFromChain;
       // back to default condition, should be disabled = false

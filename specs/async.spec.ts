@@ -17,6 +17,23 @@ describe('Unit tests async end user interface', function() {
     expect(body).to.be.exist;
   });
 
+  it('positive chain usage without name as an argument', async function() {
+    const {status, body} = await someController.getDataMethod1()
+      .assertStatusEqual200()
+      .assertStatus(200);
+    expect(status).to.eql(200);
+    expect(body).to.be.exist;
+  });
+
+  it('positive chain few usage without name as an argument', async function() {
+    const {status, body} = await someController.getDataMethod1()
+      .assertStatusEqual200()
+      .assertHeadersToBeExist()
+      .assertStatus(200);
+    expect(status).to.eql(200);
+    expect(body).to.be.exist;
+  });
+
   it('positive chain usage few arguments in asserter', async function() {
     const {status, body} = await someController.getDataMethod1().assertResponsePropEqual('status', 200);
     expect(status).to.eql(200);

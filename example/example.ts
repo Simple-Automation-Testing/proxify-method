@@ -34,12 +34,22 @@ function assertHeaders(expectedHeaderKey, {headers}) {
   expect(headers).to.include(expectedHeaderKey);
 }
 
+function assertHeadersToBeExist({headers}) {
+  expect(headers).to.exist;
+}
+
+function assertStatusEqual200({status}) {
+  expect(status).to.equal(200);
+}
+
 class MainIterface {
   protected req: typeof noop;
 
   constructor() {
     this.req = noop;
-    chainProxify('assertStatus', assertStatus)
+    chainProxify(assertStatusEqual200)
+      .chainProxify(assertHeadersToBeExist)
+      .chainProxify('assertStatus', assertStatus)
       .chainProxify('assertBodyInclude', assertBodyInclude)
       .chainProxify('assertHeader', assertHeaders)
       .chainProxify('assertArray', assertArray)
@@ -59,6 +69,8 @@ interface IResponseData extends Promise<ITypicalData> {
   assertBodyInclude(bodyPart: number): IResponseData;
   assertHeader(headerKey: string): IResponseData;
   assertResponsePropEqual(prop: string, expectedValue: any): IResponseData;
+  assertStatusEqual200(): IResponseData;
+  assertHeadersToBeExist(): IResponseData;
 }
 
 interface IDataExtended extends ITypicalData {
