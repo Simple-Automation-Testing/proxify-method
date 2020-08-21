@@ -1,8 +1,20 @@
 
-function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+  let proxifiedResult = resultPromise;
   const callQueue = [];
   const proxed = new Proxy({}, {
     get(_t, p) {
+
+      if (p === 'toJSON') {
+        return function() {
+          if (fromResult) {
+            return proxifiedResult;
+          } else {
+            return resultPromise;
+          }
+        };
+      }
+
       if (chainMehod[p as string]) {
         return function(...expectation) {
           callQueue.push(
@@ -31,19 +43,18 @@ function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: a
 
           const catcher = p === 'catch' ? onRes : onRej;
 
-          let iterationResult;
           for (const queuedCall of callQueue) {
 
-            iterationResult = await queuedCall(fromResult ? iterationResult : undefined).catch((error) => ({error, ____proxed____: true}));
-            if (iterationResult && iterationResult.____proxed____) {
-              return catcher(iterationResult.error);
+            proxifiedResult = await queuedCall(fromResult ? proxifiedResult : undefined)
+              .catch((error) => ({error, ____proxed____error: true}));
+
+            if (proxifiedResult && proxifiedResult.____proxed____error) {
+              return catcher(proxifiedResult.error);
             }
           }
-
           if (fromResult) {
-            return iterationResult;
+            return proxifiedResult;
           }
-
           return resultPromise[p].call(resultPromise, onRes, onRej);
         };
       }
@@ -53,5 +64,5 @@ function proxifyResultAsync(resultPromise, chainMehod: {[k: string]: (...args: a
 }
 
 export {
-  proxifyResultAsync
+  proxifyAsync
 };

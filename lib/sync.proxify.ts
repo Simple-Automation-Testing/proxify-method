@@ -1,8 +1,14 @@
-function proxifyResultSync(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+function proxifySync(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
   let proxifiedResult = result;
-
   const proxed = new Proxy(result, {
     get(_t, p) {
+
+      if (p === 'toJSON') {
+        return function() {
+          return proxifiedResult;
+        };
+      }
+
       if (proxifiedResult[p] && (typeof proxifiedResult[p]).includes('function')) {
         return function(...args) {
           return proxifiedResult[p].call(proxifiedResult, ...args);
@@ -35,5 +41,5 @@ function proxifyResultSync(result, chainMehod: {[k: string]: (...args: any[]) =>
 }
 
 export {
-  proxifyResultSync
+  proxifySync
 };

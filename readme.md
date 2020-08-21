@@ -7,11 +7,12 @@
 
 ### Usage
 
-[ts example](/example/example.ts)
-[js example](#js)
+[ts example chainProxify](/example/example.ts)
+[js example chainProxify](#js)
 
 #### js
 
+## chainProxify usage
 ```js
 // example with node-fetch and chai
 const fetch = require('node-fetch');
@@ -69,4 +70,28 @@ async function test() {
   // ... usage of the response
   const resultBdd = responseBddExample;
 }
+```
+
+## proxify usage
+```ts
+import {proxify} from 'proxify-method';
+
+const obj = {a: 2, b: 3, c: 4};
+
+function isPropExists(prop, value, targetObj) {
+  expect(targetObj[prop]).toEqual(value);
+}
+
+const proxedObj = proxify(obj, {isPropExists: isPropExists});
+
+const {a, b, c} = proxedObj
+  .isPropExists('a', 2)
+  .isPropExists('b', 3)
+  .isPropExists('c', 4);
+
+expect(a).toEqual(obj.a);
+expect(b).toEqual(obj.b);
+expect(c).toEqual(obj.c);
+expect(proxedObj).toDeepEqual(obj);
+
 ```
