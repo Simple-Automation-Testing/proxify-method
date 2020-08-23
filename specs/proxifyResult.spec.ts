@@ -135,6 +135,33 @@ describe('proxify', function() {
       expect(error instanceof AssertionError).toEqual(true);
     }
   });
+
+  it('[P] proxify, common API', function() {
+    const obj = {a: 2, b: 3, c: 4};
+
+    function isPropExists(prop, value, targetObj) {
+      expect(targetObj[prop]).toEqual(value);
+    }
+
+    const proxedObj = proxify(obj, {isPropExists: isPropExists})
+      .isPropExists('a', 2);
+
+    expect(proxedObj.toString()).toEqual(obj.toString());
+    expect(Object.keys(obj)).toDeepEqual(Object.keys(proxedObj));
+
+    for (const k in obj) {
+      expect(obj[k]).toEqual(proxedObj[k]);
+    }
+    for (const k in proxedObj) {
+      expect(proxedObj[k]).toEqual(obj[k]);
+    }
+
+    proxedObj.x = 10;
+
+    expect('x' in proxedObj).toEqual(true);
+
+    proxedObj.isPropExists('x', 10);
+  });
 });
 
 
