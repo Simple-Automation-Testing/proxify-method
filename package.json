@@ -1,10 +1,11 @@
 {
   "name": "proxify-method",
-  "version": "0.0.7",
+  "version": "0.0.10",
   "description": "Project for flexible extension of the existing functionality",
   "main": "built/index.js",
   "scripts": {
     "test": "find ./specs/ -name '*.spec.ts' | xargs mocha --require ts-node/register --timeout 30000",
+    "test:debug": "mocha ./specs/async.child.methods.spec.ts --require ts-node/register --timeout 30000",
     "lint": "eslint --ext .ts ./",
     "build": "rm -rf ./built && tsc"
   },

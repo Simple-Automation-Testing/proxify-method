@@ -11,13 +11,13 @@ function proxify(result, chainMehod: {[k: string]: (...args: any[]) => any}, fro
   return proxifySync(result, chainMehod, fromResult);
 }
 
-function initChainModel(ctx, chainMehod, resultFromChain) {
+function initChainModel(ctx, bindCtx, chainMehod, resultFromChain) {
   const ownProps = Object.getOwnPropertyNames(ctx.__proto__);
   const onlyMethods = ownProps.filter((k) => (typeof ctx.__proto__[k]) === 'function' && !(k === 'constructor'));
   onlyMethods.forEach((m) => {
     const currentMethod = ctx.__proto__[m];
     ctx.__proto__[m] = function(...args) {
-      return proxify(currentMethod.call(ctx, ...args), chainMehod, resultFromChain);
+      return proxify(currentMethod.call(bindCtx, ...args), chainMehod, resultFromChain);
     };
   });
 }
@@ -31,7 +31,7 @@ interface INameOrAsserter {
 interface ISetUpChain {
   resultFromChain: boolean;
   <T>(name: string | INameOrAsserter, asserter?: (...args: any[]) => any): {
-    chainProxify: ISetUpChain; initChainModel: (ctx: any) => void
+    chainProxify: ISetUpChain; initChainModel: (ctx: any, bindCtx?: any) => void
   }
 }
 
@@ -50,11 +50,11 @@ function setUpChain<T>(name: string | INameOrAsserter, asserter?: INameOrAsserte
 
   return {
     chainProxify: (name: string | INameOrAsserter, asserter?: INameOrAsserter) => setUpChain(name, asserter, _chainMehod),
-    initChainModel: (ctx) => {
+    initChainModel: (ctx, bindCtx?) => {
       const resultFromChain = setUpChain.resultFromChain;
       // back to default condition, should be disabled = false
       setUpChain.resultFromChain = false;
-      initChainModel(ctx, _chainMehod, resultFromChain);
+      initChainModel(ctx, bindCtx || ctx, _chainMehod, resultFromChain);
     }
   };
 }
