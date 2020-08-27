@@ -20,7 +20,7 @@ function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) 
           callQueue.push(
             async function() {
               const resolved = await resultPromise;
-              chainMehod[p as string](...expectation, resolved);
+              return chainMehod[p as string](...expectation, resolved);
             }
           );
           return proxed;

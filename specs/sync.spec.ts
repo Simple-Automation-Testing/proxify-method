@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {SomeControllerApi} from '../example/example';
+import {SomeControllerApi} from './_setup.from.chai.from.parent';
 
 describe('Unit tests sync end user interface', function() {
   const someController = new SomeControllerApi();

@@ -1,8 +1,8 @@
 import {expect, AssertionError} from 'chai';
-import {SomeControllerApi} from './_setup.from.chai.from.parent';
+import {ChildExpectedDecorated} from './_setup.from.chai.from.parent.methods.to.child';
 
-describe('Unit tests async end user interface', function() {
-  const someController = new SomeControllerApi();
+describe('Unit tests async child method', function() {
+  const someController = new ChildExpectedDecorated();
 
   it('positive default usage', async function() {
     const {status, body, headers} = await someController.getDataMethod1();
