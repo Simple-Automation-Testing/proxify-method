@@ -1,4 +1,3 @@
-
 function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
   let proxifiedResult = resultPromise;
   const callQueue = [];
