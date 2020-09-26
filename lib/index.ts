@@ -1,13 +1,17 @@
 import {proxifyAsync} from './async.proxify';
 import {proxifySync} from './sync.proxify';
+import {getProxyDecorate} from './proxy.helper';
 
 function proxify(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+
   if ((typeof result).includes('function')) {
     result = result();
   }
+
   if ((typeof result) === 'object' && result.then) {
     return proxifyAsync(result, chainMehod, fromResult);
   }
+
   return proxifySync(result, chainMehod, fromResult);
 }
 
@@ -17,7 +21,7 @@ function initChainModel(ctx, bindCtx, chainMehod, resultFromChain) {
   onlyMethods.forEach((m) => {
     const currentMethod = ctx.__proto__[m];
     ctx.__proto__[m] = function(...args) {
-      return proxify(currentMethod.call(bindCtx, ...args), chainMehod, resultFromChain);
+      return proxify(currentMethod.bind(bindCtx, ...args), chainMehod, resultFromChain);
     };
   });
 }
@@ -58,6 +62,7 @@ function setUpChain<T>(name: string | INameOrAsserter, asserter?: INameOrAsserte
     }
   };
 }
+
 setUpChain.resultFromChain = false;
 
 const chainProxify = setUpChain as ISetUpChain;
