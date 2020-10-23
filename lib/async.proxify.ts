@@ -1,8 +1,30 @@
-function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
+import {sleep} from './utils';
+
+function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false, originalCaller) {
   let proxifiedResult = resultPromise;
+  let wasRecallableInit = false;
+  let callableCount = null;
+  let callableInterval = null;
+
   const callQueue = [];
+
   const proxed = new Proxy({}, {
     get(_t, p) {
+
+      if (p === 'asyncCallable') {
+        return function(count: number, interval = 500) {
+          wasRecallableInit = true;
+          if (typeof count !== 'number' || count < 1) {
+            throw new Error('"count" should be number with value more than 1');
+          }
+          if (typeof interval !== 'number' || interval < 1) {
+            throw new Error('"interval" should be number with value more than 1');
+          }
+          callableCount = count;
+          callableInterval = interval;
+          return proxed;
+        };
+      }
 
       if (p === 'toJSON') {
         return function() {

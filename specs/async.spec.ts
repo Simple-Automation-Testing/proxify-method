@@ -11,8 +11,10 @@ describe('Unit tests async end user interface', function() {
     expect(headers).toExist;
   });
 
-  it('positive chain usage', async function() {
-    const {status, body} = await someController.getDataMethod1().assertStatus(200).assertBodyInclude(1);
+  it.only('positive chain usage', async function() {
+    const {status, body} = await someController.getDataMethod1()
+      .assertStatus(200)
+      .assertBodyInclude(1);
     expect(status).toEqual(200);
     expect(body).toExist;
   });

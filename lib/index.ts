@@ -3,21 +3,23 @@ import {proxifySync} from './sync.proxify';
 import {getProxyDecorate} from './proxy.helper';
 
 function proxify(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
-
+  let _result;
   if ((typeof result).includes('function')) {
-    result = result();
+    _result = result();
   }
 
-  if ((typeof result) === 'object' && result.then) {
-    return proxifyAsync(result, chainMehod, fromResult);
+  if ((typeof _result) === 'object' && _result.then) {
+    return proxifyAsync(_result, chainMehod, fromResult, result);
   }
 
-  return proxifySync(result, chainMehod, fromResult);
+  return proxifySync(_result, chainMehod, fromResult);
 }
 
 function initChainModel(ctx, bindCtx, chainMehod, resultFromChain) {
+
   const ownProps = Object.getOwnPropertyNames(ctx.__proto__);
   const onlyMethods = ownProps.filter((k) => (typeof ctx.__proto__[k]) === 'function' && !(k === 'constructor'));
+
   onlyMethods.forEach((m) => {
     const currentMethod = ctx.__proto__[m];
     ctx.__proto__[m] = function(...args) {
@@ -70,4 +72,5 @@ const chainProxify = setUpChain as ISetUpChain;
 export {
   proxify,
   chainProxify,
+  getProxyDecorate
 };
