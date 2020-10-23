@@ -1,5 +1,4 @@
-import {expect} from 'chai';
-// import {chainProxify} from 'proxify-method';
+import {expect} from 'assertior';
 import {chainProxify} from '../lib';
 
 const noop = {
@@ -13,33 +12,16 @@ const noop = {
   }), 250)),
 };
 
-
-function assertArray(expectedArrayPart, arr) {
-  expect(arr).to.include(expectedArrayPart);
-}
-
 function assertStatus(expectedStatus, {status}) {
-  expect(status).to.equal(expectedStatus);
+  expect(status).toEqual(expectedStatus);
 }
 
 function assertBodyInclude(expectedBodyPart, {body}) {
-  expect(body).to.include(expectedBodyPart);
+  expect(body).arrayIncludesMembers(expectedBodyPart);
 }
 
 function assertResponsePropEqual(prop: string, expectedValue: any, resolved) {
-  expect(resolved[prop]).to.equal(expectedValue);
-}
-
-function assertHeaders(expectedHeaderKey, {headers}) {
-  expect(headers).to.include(expectedHeaderKey);
-}
-
-function assertHeadersToBeExist({headers}) {
-  expect(headers).to.exist;
-}
-
-function assertStatusEqual200({status}) {
-  expect(status).to.equal(200);
+  expect(resolved[prop]).toEqual(expectedValue);
 }
 
 interface ITypicalData {
@@ -51,32 +33,22 @@ interface ITypicalData {
 interface IResponseData extends Promise<ITypicalData> {
   assertStatus(status: number): IResponseData;
   assertBodyInclude(bodyPart: number): IResponseData;
-  assertHeader(headerKey: string): IResponseData;
   assertResponsePropEqual(prop: string, expectedValue: any): IResponseData;
-  assertStatusEqual200(): IResponseData;
-  assertHeadersToBeExist(): IResponseData;
 }
 
 interface IDataExtended extends ITypicalData {
   assertStatus(status: number): IDataExtended;
   assertBodyInclude(bodyPart: number): IDataExtended;
-  assertHeader(headerKey: string): IDataExtended;
+  assertResponsePropEqual(prop: string, expectedValue: any): IResponseData;
 }
 
-interface IDataExtendedArray extends Array<number> {
-  assertArray(arrPart: number): IDataExtendedArray;
-}
 
 class SomeControllerOwnMethodsApi {
   private req: typeof noop;
   constructor() {
     this.req = noop;
-    chainProxify(assertStatusEqual200)
-      .chainProxify(assertHeadersToBeExist)
-      .chainProxify('assertStatus', assertStatus)
+    chainProxify('assertStatus', assertStatus)
       .chainProxify('assertBodyInclude', assertBodyInclude)
-      .chainProxify('assertHeader', assertHeaders)
-      .chainProxify('assertArray', assertArray)
       .chainProxify('assertResponsePropEqual', assertResponsePropEqual)
       .initChainModel(this);
   }
@@ -85,24 +57,11 @@ class SomeControllerOwnMethodsApi {
     return this.req.get() as any;
   }
 
-  postDataMethod2(): IResponseData {
-    return this.req.post() as any;
-  }
 
   getDataMethod1Sync(): IDataExtended {
     return {
       status: 200, body: [1, 23, 4], headers: {'Content-Type': 'application/json'}
     } as any;
-  }
-
-  postDataMethod2Sync(): IDataExtended {
-    return {
-      status: 200, body: [1, 23, 4], headers: {'Content-Type': 'application/json'}
-    } as any;
-  }
-
-  getArrayData(): IDataExtendedArray {
-    return [1, 2, 3, 4, 5] as IDataExtendedArray;
   }
 }
 

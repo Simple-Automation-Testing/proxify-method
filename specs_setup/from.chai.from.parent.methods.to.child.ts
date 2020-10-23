@@ -1,5 +1,4 @@
-import {expect} from 'chai';
-// import {chainProxify} from 'proxify-method';
+import {expect} from 'assertior';
 import {chainProxify} from '../lib';
 
 const noop = {
@@ -14,48 +13,24 @@ const noop = {
 };
 
 
-function assertArray(expectedArrayPart, arr) {
-  expect(arr).to.include(expectedArrayPart);
-}
-
 function assertStatus(expectedStatus, {status}) {
-  expect(status).to.equal(expectedStatus);
+  expect(status).toEqual(expectedStatus);
 }
 
 function assertBodyInclude(expectedBodyPart, {body}) {
-  expect(body).to.include(expectedBodyPart);
+  expect(body).arrayIncludesMembers(expectedBodyPart);
 }
 
 function assertResponsePropEqual(prop: string, expectedValue: any, resolved) {
-  expect(resolved[prop]).to.equal(expectedValue);
-}
-
-function assertHeaders(expectedHeaderKey, {headers}) {
-  expect(headers).to.include(expectedHeaderKey);
+  expect(resolved[prop]).toEqual(expectedValue);
 }
 
 function assertHeadersToBeExist({headers}) {
-  expect(headers).to.exist;
+  expect(headers).toExist;
 }
 
 function assertStatusEqual200({status}) {
-  expect(status).to.equal(200);
-}
-
-class MainIterface {
-  protected req: typeof noop;
-
-  constructor() {
-    this.req = noop;
-    chainProxify(assertStatusEqual200)
-      .chainProxify(assertHeadersToBeExist)
-      .chainProxify('assertStatus', assertStatus)
-      .chainProxify('assertBodyInclude', assertBodyInclude)
-      .chainProxify('assertHeader', assertHeaders)
-      .chainProxify('assertArray', assertArray)
-      .chainProxify('assertResponsePropEqual', assertResponsePropEqual)
-      .initChainModel(this);
-  }
+  expect(status).toEqual(200);
 }
 
 interface ITypicalData {
@@ -83,9 +58,17 @@ interface IDataExtendedArray extends Array<number> {
   assertArray(arrPart: number): IDataExtendedArray;
 }
 
-class SomeControllerApi extends MainIterface {
+class SomeControllerOwnMethodsApi {
+  private req: typeof noop;
+  private __proto__;
   constructor() {
-    super();
+    this.req = noop;
+    chainProxify(assertStatusEqual200)
+      .chainProxify(assertHeadersToBeExist)
+      .chainProxify('assertStatus', assertStatus)
+      .chainProxify('assertBodyInclude', assertBodyInclude)
+      .chainProxify('assertResponsePropEqual', assertResponsePropEqual)
+      .initChainModel(this.__proto__, this);
   }
 
   getDataMethod1(): IResponseData {
@@ -113,6 +96,12 @@ class SomeControllerApi extends MainIterface {
   }
 }
 
+class ChildExpectedDecorated extends SomeControllerOwnMethodsApi {
+  constructor() {
+    super();
+  }
+}
+
 export {
-  SomeControllerApi
+  ChildExpectedDecorated
 };

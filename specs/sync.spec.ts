@@ -1,65 +1,65 @@
-import {expect} from 'chai';
-import {SomeControllerApi} from './_setup.from.chai.from.parent';
+import {expect} from 'assertior';
+import {SomeControllerApi} from '../specs_setup/from.chai.from.parent';
 
 describe('Unit tests sync end user interface', function() {
   const someController = new SomeControllerApi();
 
   it('positive default usage', function() {
-    const {status, body, headers} = someController.postDataMethod2Sync();
-    expect(status).to.be.exist;
-    expect(body).to.be.exist;
-    expect(headers).to.be.exist;
+    const {status, body, headers} = someController.getDataMethod1Sync();
+    expect(status).toExist;
+    expect(body).toExist;
+    expect(headers).toExist;
   });
 
   it('positive chain usage', function() {
-    const {status, body} = someController.postDataMethod2Sync().assertStatus(200).assertBodyInclude(1);
-    expect(status).to.eql(200);
-    expect(body).to.be.exist;
+    const {status, body} = someController.getDataMethod1Sync().assertStatus(200).assertBodyInclude(1);
+    expect(status).toEqual(200);
+    expect(body).toExist;
   });
 
   it('positive full chain', function() {
-    const {status, body} = someController.postDataMethod2Sync()
+    const {status, body} = someController.getDataMethod1Sync()
       .assertStatus(200)
       .assertBodyInclude(1)
       .assertStatus(200)
       .assertBodyInclude(1);
-    expect(status).to.eql(200);
-    expect(body).to.be.exist;
+    expect(status).toEqual(200);
+    expect(body).toExist;
   });
 
   it('negative chain', function() {
     try {
-      someController.postDataMethod2Sync().assertStatus(202);
+      someController.getDataMethod1Sync().assertStatus(202);
     } catch (error) {
-      expect(error.toString()).to.include('expected 200 to equal 202');
+      expect(error.toString()).stringIncludesSubstring('200 to equal 202');
     }
   });
 
   it('negative chain second call failed', function() {
     try {
-      someController.postDataMethod2Sync()
+      someController.getDataMethod1Sync()
         .assertStatus(200)
         // not exists in body
         .assertBodyInclude(10000);
     } catch (error) {
-      expect(error.toString()).to.include('to include 10000');
+      expect(error.toString()).stringIncludesSubstring('to include 10000');
     }
   });
 
   it('negative chain first call failed', function() {
     try {
-      someController.postDataMethod2Sync()
+      someController.getDataMethod1Sync()
         .assertBodyInclude(10000)
         .assertStatus(200);
       // not exists in body
     } catch (error) {
-      expect(error.toString()).to.include('to include 10000');
+      expect(error.toString()).stringIncludesSubstring('to include 10000');
     }
   });
 
   it('negative chain last after few calls', function() {
     try {
-      someController.postDataMethod2Sync()
+      someController.getDataMethod1Sync()
         .assertStatus(200)
         .assertStatus(200)
         .assertBodyInclude(1)
@@ -68,46 +68,22 @@ describe('Unit tests sync end user interface', function() {
         .assertBodyInclude(10000);
       // not exists in body
     } catch (error) {
-      expect(error.toString()).to.include('to include 10000');
+      expect(error.toString()).stringIncludesSubstring('to include 10000');
     }
   });
 
   it('iteration assertion should not be in for in', function() {
-    const result = someController.postDataMethod2Sync();
+    const result = someController.getDataMethod1Sync();
     const keys = [];
     for (const k in result) {
       keys.push(k);
     }
-    expect(keys).to.eql(['status', 'body', 'headers']);
-    expect('assertStatus' in result).to.equal(false);
+    expect(keys).toDeepEqual(['status', 'body', 'headers']);
+    expect('assertStatus' in result).toEqual(false);
   });
 
   it('toString', function() {
-    const result = someController.postDataMethod2Sync();
-    expect(result.toString()).to.eql('[object Object]');
-  });
-
-  it('array data', function() {
-    const result = someController.getArrayData();
-    expect(result[0]).to.eql(1);
-    const resultReduce = result.reduce((acc, item) => {
-      acc += item;
-      return acc;
-    });
-    expect(resultReduce).to.eql(15);
-    expect(Array.isArray(result)).to.equal(true);
-  });
-
-  it('array data chain', function() {
-    const result = someController.getArrayData().assertArray(1);
-    expect(Array.isArray(result)).to.equal(true);
-  });
-
-  it('array data chain negative', function() {
-    try {
-      someController.getArrayData().assertArray(1000);
-    } catch (error) {
-      expect(error.toString()).to.include('to include 1000');
-    }
+    const result = someController.getDataMethod1Sync();
+    expect(result.toString()).toEqual('[object Object]');
   });
 });
