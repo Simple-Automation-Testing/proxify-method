@@ -1,16 +1,16 @@
 import {proxifyHadler} from './proxify.handler';
 import {proxifySync} from './sync.proxify';
-import {isArray, isFunction, isObject} from './type.utils';
+import {isArray, isFunction, isObject} from 'sat-utils';
 
-function callable(originalMethodCaller, context, chainers, config) {
-  return proxifyHadler(originalMethodCaller(), chainers, originalMethodCaller, config);
+function callable(originalMethodCaller: () => any | void, context, chainers, config) {
+  return proxifyHadler(originalMethodCaller(), originalMethodCaller, context, chainers, config);
 }
 
 type ChainerTypeFn = (...args: any[]) => any | void;
-type ChainerTypeChainerObj = {name: string, chain: (...args: any[]) => any | void};
+type ChainerTypeChainerObj = {[k: string]: (...args: any[]) => any | void};
 type ChainerTypeArrayFns = Array<(...args: any[]) => any | void>;
-type ChainerTypeArrayChainerObj = Array<{name: string, chain: (...args: any[]) => any}>
-type ChainerTypeArrayWithBothTypes = Array<((...args: any[]) => any | void) | {name: string, chain: (...args: any[]) => any}>;
+type ChainerTypeArrayChainerObj = Array<{[k: string]: (...args: any[]) => any}>
+type ChainerTypeArrayWithBothTypes = Array<((...args: any[]) => any | void) | {[k: string]: (...args: any[]) => any}>;
 
 /**
  * @example
@@ -27,7 +27,7 @@ interface IProxifyItConfig {
 }
 function proxifyIt(config?: IProxifyItConfig) {
   const shouldBeDecorated = [];
-  const chainers = [];
+  const chainers = {};
 
   const proxifyItIterface = {
     /*
@@ -67,35 +67,36 @@ function proxifyIt(config?: IProxifyItConfig) {
           }
 
           if (isFunction(_chainer) && _chainer.name) {
-            return chainers.push({name: _chainer.name, chain: _chainer});
+            return Object.assign(chainers, {[(_chainer as ChainerTypeFn).name]: _chainer});
           }
           if (isObject(_chainer)) {
-            return chainers.push(_chainer);
+            return Object.assign(chainers, _chainer);
           }
         });
 
         return proxifyItIterface;
       } else if (isObject(chainer)) {
-        if ((!(chainer as ChainerTypeChainerObj).name || !(chainer as ChainerTypeChainerObj).chain)) {
-          throw new Error(`
-            chainer obj should be
-              {name: string, chai: () => any}
-          `);
-        }
-        chainers.push(chainer);
-
+        const keys = Object.keys(chainer).forEach((chainerKey) => {
+          if (!isFunction(chainer[chainerKey])) {
+            throw new Error(`
+              chainer obj should be
+                {{[_chainer.name as string]: chai: () => any | void}
+            `);
+          }
+        });
+        Object.assign(chainers, chainer);
         return proxifyItIterface;
       } else if (isFunction(chainer)) {
         if (!(chainer as ChainerTypeFn).name) {
           throw new Error(`chainer function should not be anonymous function`);
         }
-        chainers.push({name: (chainer as ChainerTypeFn).name, chain: chainer});
-
+        Object.assign(chainers, {[(chainer as ChainerTypeFn).name]: chainer});
         return proxifyItIterface;
       }
     },
     baseOnPrototype() {
       return function(constructorFunction) {
+
         const prot = constructorFunction.prototype;
         const ownPropsList = Object.getOwnPropertyNames(prot);
         const protMethods = ownPropsList
@@ -129,10 +130,11 @@ function proxifyIt(config?: IProxifyItConfig) {
           descriptor.value = function(...args) {
             /**
              * @info TBD
-             */
+            */
             const executableMethod = originalMethod.bind(this, ...args);
-            return callable(executableMethod, this);
+            return callable(executableMethod, this, chainers, config);
           };
+          Object.defineProperty(prot, fnName, descriptor);
         });
       };
     }

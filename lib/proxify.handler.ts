@@ -1,14 +1,14 @@
 import {sleep} from './utils';
-
+import {isPromise, isFunction} from 'sat-utils';
 /**
  * @info
- * @initialExecutionResult can be a promise or any data
+ * @resulter can be a promise or any data
  */
 
-function proxifyHadler(initialExecutionResult, chainers: {[k: string]: (...args: any[]) => any}, originalCaller, config: any = {}) {
+function proxifyHadler(resulter, originalCaller, context, chainers: {[k: string]: (...args: any[]) => any}, config: any = {}) {
   const {fromResult = false} = config;
 
-  let proxifiedResult = initialExecutionResult;
+  let proxifiedResult = resulter;
 
   const callQueue = [];
 
@@ -19,37 +19,44 @@ function proxifyHadler(initialExecutionResult, chainers: {[k: string]: (...args:
           if (fromResult) {
             return proxifiedResult;
           } else {
-            return initialExecutionResult;
+            return resulter;
           }
         };
       }
 
       if (chainers[p as string]) {
         return function(...expectation) {
-          callQueue.push(
-            async function() {
-              const resolved = await initialExecutionResult;
-              return chainers[p as string](...expectation, resolved);
-            }
-          );
+          async function asyncHadler() {
+            const resolved = await resulter;
+            return chainers[p as string](...expectation, resolved);
+          }
+
+          async function syncHadler() {
+            const resolved = resulter;
+            return chainers[p as string](...expectation, resolved);
+          }
+          const handler = isPromise(resulter) ? asyncHadler : syncHadler;
+
+          callQueue.push(handler);
+          return proxed;
+        };
+      } else if (isFunction(context[p])) {
+        return function() {
+          const hadler = function(...args) {
+            proxifiedResult = context[p].call(context, ...args);
+            return proxifiedResult;
+          };
+
+          callQueue.push(hadler);
           return proxed;
         };
       } else if (p === 'then' || p === 'catch') {
         if (!callQueue.length) {
           return function(...args) {
-            return initialExecutionResult[p].call(initialExecutionResult, ...args);
-          };
-        } if (callQueue.length === 1) {
-          return async function(onRes, onRej) {
-            const result = await callQueue[0]().catch(onRej);
-            if (fromResult) {
-              return result;
-            }
-            return initialExecutionResult[p].call(initialExecutionResult, onRes, onRej);
+            return resulter[p].call(resulter, ...args);
           };
         }
         return async function(onRes, onRej) {
-
           const catcher = p === 'catch' ? onRes : onRej;
 
           for (const queuedCall of callQueue) {
@@ -64,7 +71,7 @@ function proxifyHadler(initialExecutionResult, chainers: {[k: string]: (...args:
           if (fromResult) {
             return proxifiedResult;
           }
-          return initialExecutionResult[p].call(initialExecutionResult, onRes, onRej);
+          return resulter[p].call(resulter, onRes, onRej);
         };
       }
     }
