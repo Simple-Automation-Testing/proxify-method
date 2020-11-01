@@ -1,6 +1,5 @@
 import {proxifyAsync} from './async.proxify';
 import {proxifySync} from './sync.proxify';
-import {getProxyDecorate} from './proxy.helper';
 
 function proxify(result, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false) {
   let _result;
@@ -72,5 +71,4 @@ const chainProxify = setUpChain as ISetUpChain;
 export {
   proxify,
   chainProxify,
-  getProxyDecorate
 };
