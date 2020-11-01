@@ -1,9 +1,9 @@
-import {proxifyAsync} from './async.proxify';
+import {proxifyHadler} from './proxify.handler';
 import {proxifySync} from './sync.proxify';
 import {isArray, isFunction, isObject} from './type.utils';
 
-function callable(originalMethodCaller, context) {
-  return originalMethodCaller();
+function callable(originalMethodCaller, context, chainers, config) {
+  return proxifyHadler(originalMethodCaller(), chainers, originalMethodCaller, config);
 }
 
 type ChainerTypeFn = (...args: any[]) => any | void;

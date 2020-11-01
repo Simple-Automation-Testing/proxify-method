@@ -1,47 +1,35 @@
 import {sleep} from './utils';
 
-function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) => any}, fromResult = false, originalCaller) {
-  let proxifiedResult = resultPromise;
-  let wasRecallableInit = false;
-  let callableCount = null;
-  let callableInterval = null;
+/**
+ * @info
+ * @initialExecutionResult can be a promise or any data
+ */
+
+function proxifyHadler(initialExecutionResult, chainers: {[k: string]: (...args: any[]) => any}, originalCaller, config: any = {}) {
+  const {fromResult = false} = config;
+
+  let proxifiedResult = initialExecutionResult;
 
   const callQueue = [];
 
   const proxed = new Proxy({}, {
     get(_t, p) {
-
-      if (p === 'asyncCallable') {
-        return function(count: number, interval = 500) {
-          wasRecallableInit = true;
-          if (typeof count !== 'number' || count < 1) {
-            throw new Error('"count" should be number with value more than 1');
-          }
-          if (typeof interval !== 'number' || interval < 1) {
-            throw new Error('"interval" should be number with value more than 1');
-          }
-          callableCount = count;
-          callableInterval = interval;
-          return proxed;
-        };
-      }
-
       if (p === 'toJSON') {
         return function() {
           if (fromResult) {
             return proxifiedResult;
           } else {
-            return resultPromise;
+            return initialExecutionResult;
           }
         };
       }
 
-      if (chainMehod[p as string]) {
+      if (chainers[p as string]) {
         return function(...expectation) {
           callQueue.push(
             async function() {
-              const resolved = await resultPromise;
-              return chainMehod[p as string](...expectation, resolved);
+              const resolved = await initialExecutionResult;
+              return chainers[p as string](...expectation, resolved);
             }
           );
           return proxed;
@@ -49,7 +37,7 @@ function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) 
       } else if (p === 'then' || p === 'catch') {
         if (!callQueue.length) {
           return function(...args) {
-            return resultPromise[p].call(resultPromise, ...args);
+            return initialExecutionResult[p].call(initialExecutionResult, ...args);
           };
         } if (callQueue.length === 1) {
           return async function(onRes, onRej) {
@@ -57,7 +45,7 @@ function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) 
             if (fromResult) {
               return result;
             }
-            return resultPromise[p].call(resultPromise, onRes, onRej);
+            return initialExecutionResult[p].call(initialExecutionResult, onRes, onRej);
           };
         }
         return async function(onRes, onRej) {
@@ -76,7 +64,7 @@ function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) 
           if (fromResult) {
             return proxifiedResult;
           }
-          return resultPromise[p].call(resultPromise, onRes, onRej);
+          return initialExecutionResult[p].call(initialExecutionResult, onRes, onRej);
         };
       }
     }
@@ -85,5 +73,5 @@ function proxifyAsync(resultPromise, chainMehod: {[k: string]: (...args: any[]) 
 }
 
 export {
-  proxifyAsync
+  proxifyHadler
 };
