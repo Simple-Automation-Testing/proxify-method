@@ -1,7 +1,6 @@
 import {proxifyIt} from '../lib';
 import {expect} from 'assertior';
 
-
 const firstNoop = (arg): any => new Promise((res) => {
   const success = {body: {test: true}, status: 200};
   const error = {body: {test: false}, status: 404};
@@ -17,7 +16,6 @@ const secondNoop = (arg): any => new Promise((res) => {
   setTimeout(() => res(result), 150);
 });
 
-
 interface ITypicalData {
   status: number;
   body: {[k: string]: any};
@@ -25,14 +23,14 @@ interface ITypicalData {
 
 interface IResponseData extends Promise<ITypicalData> {
   assertStatus(status: number): IResponseData;
-  method2(arg: number): IResponseData;
-  method1(arg: number): IResponseData;
+  method2(arg?: number): IResponseData;
+  method1(arg?: number): IResponseData;
 }
 
 interface IResponseDataSync extends ITypicalData {
   assertStatus(status: number): IResponseDataSync;
-  syncMethod1(arg: number): IResponseDataSync;
-  syncMethod2(arg: number): IResponseDataSync;
+  syncMethod1(arg?: number): IResponseDataSync;
+  syncMethod2(arg?: number): IResponseDataSync;
 }
 
 function assertStatus(value, data) {
@@ -96,9 +94,10 @@ async function testIt() {
 
 testItSync();
 function testItSync() {
-  const resulter = controller
+  const test = controller
     .syncMethod1(1)
-    .assertStatus(201);
-  console.log(resulter);
+    .assertStatus(200)
+    .syncMethod2();
 
+  console.log(test.status);
 }
