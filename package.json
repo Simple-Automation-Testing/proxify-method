@@ -4,8 +4,9 @@
   "description": "Project for flexible extension of the existing functionality",
   "main": "built/index.js",
   "scripts": {
-    "test": "find ./specs/ -name '*.spec.ts' | xargs mocha --require ts-node/register --timeout 30000",
-    "test:debug": "mocha ./specs/async.child.methods.spec.ts --require ts-node/register --timeout 30000",
+    "test": "LOG_LEVEL=ERROR mocha ./specs/**/*.spec.ts --require ts-node/register --timeout 30000",
+    "test:verbose": "LOG_LEVEL=VERBOSE mocha ./specs/**/*.spec.ts --require ts-node/register --timeout 30000",
+    "test:watch": "mocha ./specs/**/*.spec.ts --require ts-node/register --timeout 30000 --watch",
     "lint": "eslint --ext .ts ./",
     "build": "rm -rf ./built && tsc"
   },
@@ -44,6 +45,6 @@
     "node": ">=12.18.3"
   },
   "dependencies": {
-    "sat-utils": "^0.0.2"
+    "sat-utils": "^0.0.3"
   }
 }

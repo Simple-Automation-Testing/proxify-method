@@ -1,5 +1,4 @@
 import {proxifyHadler} from './proxify.handler';
-import {proxifySync} from './sync.proxify';
 import {isArray, isFunction, isObject} from 'sat-utils';
 
 function callable(originalMethodCaller: () => any | void, context, chainers, config) {
