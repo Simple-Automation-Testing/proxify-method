@@ -44,6 +44,6 @@
     "node": ">=12.18.3"
   },
   "dependencies": {
-    "sat-utils": "0.0.1"
+    "sat-utils": "^0.0.2"
   }
 }
