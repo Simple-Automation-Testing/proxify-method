@@ -3,7 +3,7 @@ import {proxifySync} from './sync.proxify';
 import {isArray, isFunction, isObject} from 'sat-utils';
 
 function callable(originalMethodCaller: () => any | void, context, chainers, config) {
-  return proxifyHadler(originalMethodCaller(), originalMethodCaller, context, chainers, config);
+  return proxifyHadler(originalMethodCaller, context, chainers, config);
 }
 
 type ChainerTypeFn = (...args: any[]) => any | void;

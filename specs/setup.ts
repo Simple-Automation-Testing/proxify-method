@@ -11,16 +11,10 @@ const firstNoop = (arg): any => new Promise((res) => {
   }, 150);
 });
 const secondNoop = (arg): any => new Promise((res) => {
-  console.log(arg, 'second noop');
   const success = {body: {test: true}, status: 201};
   const error = {body: {test: false}, status: 401};
   const result = arg ? success : error;
-  console.log(result, 'second noop result');
-  setTimeout(() => {
-    const success = {body: {test: true}, status: 201};
-    const error = {body: {test: false}, status: 401};
-    res(result);
-  }, 150);
+  setTimeout(() => res(result), 150);
 });
 
 
@@ -35,7 +29,14 @@ interface IResponseData extends Promise<ITypicalData> {
   method1(arg: number): IResponseData;
 }
 
+interface IResponseDataSync extends ITypicalData {
+  assertStatus(status: number): IResponseDataSync;
+  syncMethod1(arg: number): IResponseDataSync;
+  syncMethod2(arg: number): IResponseDataSync;
+}
+
 function assertStatus(value, data) {
+  console.log('HERE');
   expect(value).toEqual(data.status);
   return data;
 }
@@ -55,6 +56,20 @@ class Controller {
     return this.item;
   }
 
+  syncMethod1(arg): IResponseDataSync {
+    const success = {body: {test: true}, status: 200};
+    const error = {body: {test: false}, status: 404};
+    const result = arg ? success : error;
+    return result as any;
+  }
+
+  syncMethod2(arg): IResponseDataSync {
+    const success = {body: {test: true}, status: 201};
+    const error = {body: {test: false}, status: 401};
+    const result = arg ? success : error;
+    return result as any;
+  }
+
   method2(arg?): IResponseData {
     return secondNoop(arg);
   }
@@ -69,22 +84,21 @@ proxifyIt()
 
 const controller = new Controller();
 
-testIt();
+// testIt();
 async function testIt() {
-  console.log('X');
   const resulter = await controller
     .method1(1)
     .assertStatus(200)
-    .method2(0);
-
-  console.log('Y');
-  // .then((args) => {
-
-  //   console.log(args, 'ARGS');
-
-  //   return args;
-  // })
-  console.log('here')
-  console.log(resulter, 'call result status', '!!!!!!!!!!!!');
+    .method2(0)
+    .assertStatus(401);
+  expect(resulter.status).toEqual(401);
 }
-// controller.method1().then(console.log);
+
+testItSync();
+function testItSync() {
+  const resulter = controller
+    .syncMethod1(1)
+    .assertStatus(201);
+  console.log(resulter);
+
+}

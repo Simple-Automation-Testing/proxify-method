@@ -7,60 +7,59 @@ logger.setLogLevel(LOG_LEVEL);
  * @resulter can be a promise or any data
  */
 
-function proxifyHadler(resulter, originalCaller, context, chainers: {[k: string]: (...args: any[]) => any}, config: any = {}) {
+function proxifyHadler(originalCaller, context, chainers: {[k: string]: (...args: any[]) => any}, config: any = {}) {
   const {fromResult = false} = config;
 
-  let proxifiedResult = resulter;
+  let proxifiedResult = originalCaller();
 
   const callQueue = [];
 
   const proxed = new Proxy({}, {
     get(_t, p) {
+      console.log(p)
       if (p === 'toJSON') {
         return function() {
-          if (fromResult) {
-            return proxifiedResult;
-          } else {
-            return resulter;
-          }
+          return proxifiedResult;
         };
       }
 
       if (chainers[p as string]) {
+        /** @info logging */
         logger.info('add to chain chainers function: ', p as string);
         return function(...expectation) {
           async function asyncHadler() {
-            const resolved = await resulter;
+            const resolved = await proxifiedResult;
             return chainers[p as string](...expectation, resolved);
           }
 
           async function syncHadler() {
-            const resolved = resulter;
+            const resolved = proxifiedResult;
             return chainers[p as string](...expectation, resolved);
           }
-          const handler = isPromise(resulter) ? asyncHadler : syncHadler;
+          const handler = isPromise(proxifiedResult) ? asyncHadler : syncHadler;
 
           callQueue.push(handler);
 
           return proxed;
         };
       } else if (isFunction(context[p])) {
+        /** @info logging */
         logger.info('add to chain context function: ', p as string);
-        return function() {
 
-          function handlerContext(...args) {
+        return function(...args) {
+          function handlerContext() {
             proxifiedResult = context[p].call(context, ...args);
             return proxifiedResult;
           }
-
           callQueue.push(handlerContext);
           return proxed;
         };
       } else if (p === 'then' || p === 'catch') {
+        /** @info logging */
         logger.info('start call promise: ', p as string);
         if (!callQueue.length) {
           return function(...args) {
-            return resulter[p].call(resulter, ...args);
+            return proxifiedResult[p].call(proxifiedResult, ...args);
           };
         }
         return async function(onRes, onRej) {
@@ -77,15 +76,12 @@ function proxifyHadler(resulter, originalCaller, context, chainers: {[k: string]
             }
           }
 
-          // if (fromResult) {
           const promised = Promise.resolve(proxifiedResult);
           return promised[p].call(promised, onRes, onRej);
-
-          // }
-          // console.log('HERE', resulter, proxifiedResult);
-          // return resulter[p].call(resulter, onRes, onRej);
         };
       }
+
+      console.log('here');
     }
   });
   return proxed;
